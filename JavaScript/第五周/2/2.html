@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        //2.1封装一个自己的数组对象
+        let mathObject ={
+            pi:3.14159,
+            e:2.718,
+            sqrt2:1.414
+        };
+        //2.2生产指定范围的随机数
+        function getRandomInRange(min,max){
+            return Math.floor(Math.random()*(max - min + 1))+min;
+        }
+        //2.3封装一个person对象
+        let person = {
+            name:'张三',
+            age:25,
+            gender:'男',
+            sayHello:function(){
+                console.log(`姓名: ${this.name},年龄: ${this.age},性别: ${this.gender}`);
+            },
+            call: function(){
+                console.log("你好");
+            }
+        };
+        //输出
+        console.log("随机数:",
+        getRandomInRange(1,100));
+        person.sayHello();
+        person.call();
+    </script>
+</body>
+</html>

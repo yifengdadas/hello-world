@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script>
+        //定义数组
+        let arr = [2,6,1,77,52,25,7,99];
+        //1.1获取数组最大值
+        function getMaxValue(array){
+            return Math.max(...array);
+        }
+        //1.2将数组内容转换为一个字符串,并用'|'隔开每个元素
+        function arrayToString(array){
+            return array.join('|');
+        }
+        //1.3将数组中大于50 的元素删除
+        function removeGreaterThan50(array){
+            return array.filter(num => num <=50);
+        }
+        //测试输出
+        console.log('最大值',
+        getMaxValue(arr));
+        console.log('转换后的字符串:',
+        arrayToString(arr));
+        console.log('删除大于50后的数组:',
+        removeGreaterThan50(arr));
+    </script>
+</body>
+</html>
