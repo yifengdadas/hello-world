@@ -1,0 +1,32 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    padding: 100px;
+}
+
+textarea {
+    width: 200px;
+    height: 100px;
+    border: 1px solid pink;
+    outline: none;
+    resize: none;
+}
+
+ul {
+    margin-top: 50px;
+}
+
+li {
+    width: 300px;
+    padding: 5px;
+    background-color: #eee;
+    font-size: 14px;
+    margin: 15px 0;
+}
+
+li a {
+    float: right;
+}
