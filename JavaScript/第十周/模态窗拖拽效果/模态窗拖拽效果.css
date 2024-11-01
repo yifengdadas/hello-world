@@ -1,0 +1,87 @@
+ /* 第3部分，单击弹出遮罩层部分样式 */
+ .login-header {
+     width: 100%;
+     text-align: center;
+     font-size: 20pt;
+     position: absolute;
+ }
+
+ /* 第2部分，模态框样式 */
+ .modal {
+     /* 模态框页面居中显示 */
+     width: 500px;
+     height: 200px;
+     position: absolute;
+     left: 50%;
+     top: 50%;
+     transform: translate(-50%, -50%);
+     display: none;
+     box-shadow: 0px 0px 20px #ddd;
+     z-index: 999;
+     cursor: move;
+ }
+
+ .modal form {
+     /* 表单结构 */
+     display: flex;
+     flex-direction: column;
+     height: 100%;
+     width: 100%;
+ }
+
+ .modal form .item1 {
+     /* 表单标题 */
+     flex: 1;
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     font-weight: bold
+ }
+
+ .modal form .item2 {
+     /* 表单输入框 */
+     margin: 0 auto;
+     width: 70%;
+     display: flex;
+     flex: 1;
+     flex-direction: column;
+     justify-content: space-around;
+     align-items: center;
+ }
+
+ .username {
+     margin-left: 16px;
+ }
+
+ .vip {
+     border: 1px solid #ccc;
+     border-radius: 20px;
+     padding: 3px 40px;
+     background-color: orange;
+     color: #fff;
+ }
+
+ .close {
+     /* 关闭按钮 */
+     position: absolute;
+     right: -10px;
+     top: -10px;
+     border: 1px solid #ccc;
+     width: 20px;
+     height: 20px;
+     text-align: center;
+     line-height: 17px;
+     border-radius: 50%;
+     background-color: white
+ }
+
+ /* 第1部分，遮罩层样式 */
+ .login-bg {
+     position: absolute;
+     left: 0;
+     top: 0;
+     width: 100%;
+     height: 100%;
+     background-color: #ccc;
+     display: none;
+ }

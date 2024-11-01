@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+      .w {
+        width: 70%;
+        margin: 0 auto;
+        margin-top: 10px;
+      }
+
+      .header {
+        height: 100px;
+        background-color: red;
+      }
+
+      .banner {
+        height: 200px;
+        background-color: pink;
+      }
+
+      .main {
+        height: 1267px;
+        background-color: orange;
+      }
+
+      .slider-bar {
+        width: 70px;
+        height: 200px;
+        background-color: yellow;
+        position: absolute;
+        left: 85%;
+        top: 330px;
+      }
+
+      .goBack {
+        display: none;
+        position: absolute;
+        bottom: 0;
+      }
+    </style>
+  <body>
+    <div class="header w">头部区域</div>
+    <div class="banner w">Banner区域</div>
+    <div class="main w">主体部分</div>
+    <div class="slider-bar">
+      <span class="goBack">返回顶部</span>
+    </div>
+    <script src="实现滚动事件.js"></script>
+  </body>
+</html>

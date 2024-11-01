@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+      #box {
+        background-color: pink;
+        width: 200px;
+        height: 200px;
+        position: absolute;
+        left: 50px;
+        top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <!--定义盒子样式 -->
+    <div id="box"></div>
+    <script>
+      var box=document.getElementById('box');
+      console.log(box.offsetWidth);
+      console.log(box.offsetHeight);
+      box.onmousemove=function(e){
+        var left=box.offsetLeft;
+        var top=box.offsetTop;
+        var x=e.pageX-left;
+        var y=e.pageY-top;
+        console.log(x,y);
+      };
+    </script>
+  </body>
+</html>

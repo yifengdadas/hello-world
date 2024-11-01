@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <link rel="stylesheet" href="模态窗拖拽效果.css">
+  </head>
+  <body>
+    <!-- 遮罩层 -->
+    <div class="login-bg"></div>
+    <!-- 模态框 -->
+    <div class="modal">
+      <form>
+        <div class="item1">登录会员</div>
+        <div class="item2">
+          <div class="username">
+            <label for="username">用户名：</label>
+            <input type="text" name="username">
+          </div>
+          <div>
+            <label for="password">登录密码：</label>
+            <input type="text" name="password">
+          </div>
+        </div>
+        <div class="item1">
+          <div class="vip">登录会员</div>
+        </div>
+      </form>
+      <!-- 模态框关闭按钮 -->
+      <div class="close">x</div>
+    </div>
+    <!-- 单击弹出遮罩层 -->
+    <div class="login-header">单击，登录会员...</div>
+    <script src="模态窗拖拽效果.js"></script>
+  </body>
+</html>
