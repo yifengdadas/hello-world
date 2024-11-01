@@ -1,0 +1,100 @@
+完善计算器功能
+
+为按钮编写处理函数，绑定到对应按钮，完成计算器程序。
+
+示例代码：
+
+import tkinter as tk
+
+root = tk.Tk()
+
+root.geometry("350x500")
+
+root.title("计算器")
+
+root.resizable(0,0)
+
+
+
+#显示区域
+
+displayFrame = tk.Frame(root,width=350,height=150)
+
+displayFrame.pack(side='top',fill=tk.X,padx=0,pady=0)
+
+#显示区域-label
+
+displayLabel = tk.Label(displayFrame,font=('',36,'bold'),anchor='e')
+
+displayLabel.pack(fill=tk.x,expand=1,padx=10,pady=10)
+
+#按键区域
+
+buttonFrame = tk.Frame(root,width=350,height=350,background='red')
+
+buttonFrame.pack(side='top',fill=tk.BOTH,expand=1,padx=0,pady=0)
+
+#按键区域-button
+# 
+# 
+# 定义按钮的字体、大小、以及内外边距  
+button_font = ('Helvetica', 18, 'bold')  
+button_width = 10  # 设置按钮的宽度（字符数）  
+button_height = 50  # 设置按钮的高度（像素）  
+button_padx = 10  # 设置按钮内部的水平边距（像素）  
+button_pady = 10  # 设置按钮内部的垂直边距（像素）  
+
+#定义按钮key
+
+buttonStrings = [  
+    ['CE', 'C', "\u2190", '/'],  
+    ['7', '8', '9', '*'],  
+    ['4', '5', '6', '-'],  
+    ['1', '2', '3', '+'],  
+    ['+/-', '0', '.', '=']  
+]
+
+#使用字典保存按钮对象
+
+buttonDict = {}
+
+row_index = 0
+
+for rowlist in buttonStrings:
+
+    col_index = 0
+
+    for colStr in rowlist:
+
+        button = tk.Button(buttonFrame,
+                           text=colStr,
+                           width=button_width,
+                           height=button_height,
+                           padx=button_padx,
+                           pady=button_pady)
+        
+        #根据button的text属性将其保存到字典中
+        buttonDict[colStr] = button
+
+        button.grid(row=row_index,column=col_index,sticky=tk.E+tk.N+tk.S+tk.W)
+
+        col_index += 1
+
+    row_index += 1
+
+# 设置所有行和列的权重为1，以便它们均匀分布多余的空间  
+for i in range(5):  # 假设有5行  
+    buttonFrame.grid_rowconfigure(i, weight=1)  
+for i in range(4):  # 假设有4列  
+    buttonFrame.grid_columnconfigure(i, weight=1)
+
+
+
+#运算逻辑 和 按钮事件编写
+
+#在此编写
+
+
+
+
+root.mainloop()
