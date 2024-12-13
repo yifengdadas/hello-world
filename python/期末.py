@@ -164,3 +164,46 @@ def discover_users():
     threading.Thread(target=listen_for_broadcast, daemon=True).start()
 
 # GUI
+# GUI
+root = tk.Tk()
+root.title("局域网聊天程序")
+root.geometry("600x400")
+
+# 消息显示框
+chat_window = scrolledtext.ScrolledText(root, state=tk.DISABLED, wrap=tk.WORD)
+chat_window.pack(padx=10, pady=5, fill=tk.BOTH, expand=True)
+
+# 消息输入框和发送按钮
+message_frame = tk.Frame(root)
+message_frame.pack(padx=10, pady=5, fill=tk.X)
+
+message_input = tk.Entry(message_frame)
+message_input.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+
+send_button = tk.Button(message_frame, text="发送", command=send_message)
+send_button.pack(side=tk.RIGHT)
+
+# 用户列表框
+user_list_frame = tk.Frame(root)
+user_list_frame.pack(padx=10, pady=5, fill=tk.BOTH, expand=True)
+
+user_list_label = tk.Label(user_list_frame, text="已连接用户")
+user_list_label.pack(anchor=tk.W)
+
+user_list = tk.Listbox(user_list_frame)
+user_list.pack(fill=tk.BOTH, expand=True)
+
+# 功能按钮
+button_frame = tk.Frame(root)
+button_frame.pack(padx=10, pady=5, fill=tk.X)
+
+add_friend_button = tk.Button(button_frame, text="添加好友", command=add_friend)
+add_friend_button.pack(side=tk.LEFT, padx=(0, 5))
+
+# 登录和启动服务器
+login()
+start_server()
+discover_users()
+
+# 启动主循环
+root.mainloop()
