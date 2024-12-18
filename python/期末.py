@@ -5,6 +5,7 @@ import threading
 
 # 全局变量
 clients = {}  # 存储已连接客户端的信息
+pending_requests = set()  # 存储已处理的好友请求地址
 username = None  # 当前用户的用户名
 server_socket = None  # 服务器套接子
 HOST = '0.0.0.0'  # 本地监听地址
@@ -14,9 +15,6 @@ PORT = 12345  # 通信端口
 BROADCAST_PORT = 12346  # 广播端口
 
 def login():
-    """
-    登录功能：用户输入用户名
-    """
     global username
     username = simpledialog.askstring("登录", "请输入您的用户名：")
     if not username:
@@ -24,9 +22,6 @@ def login():
         root.destroy()
 
 def start_server():
-    """
-    启动服务器线程，监听新连接
-    """
     global server_socket
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((HOST, PORT))
@@ -40,11 +35,11 @@ def start_server():
     threading.Thread(target=accept_connections, daemon=True).start()
 
 def handle_client(client_socket, client_address):
-    """
-    处理客户端消息接收
-    """
     try:
-        client_name = client_socket.recv(1024).decode('utf-8')  # 接收用户名
+        client_name = client_socket.recv(1024).decode('utf-8')
+        if client_name.startswith("FRIEND_REQUEST"):
+            handle_friend_request(client_socket, client_address, client_name)
+            return
         clients[client_address] = (client_socket, client_name)
         update_user_list()
         display_message(f"{client_name} ({client_address}) 已加入聊天")
@@ -63,10 +58,20 @@ def handle_client(client_socket, client_address):
         update_user_list()
         client_socket.close()
 
+def handle_friend_request(client_socket, client_address, client_name):
+    if client_address not in pending_requests:
+        pending_requests.add(client_address)
+        response = messagebox.askyesno("好友请求", f"{client_name.split(':', 1)[1]} 请求添加您为好友，是否同意？")
+        if response:
+            client_socket.sendall("ACCEPTED".encode('utf-8'))
+            clients[client_address] = (client_socket, client_name.split(':', 1)[1])
+            update_user_list()
+            display_message(f"已接受 {client_address} 的好友请求")
+        else:
+            client_socket.sendall("DECLINED".encode('utf-8'))
+    client_socket.close()
+
 def send_message():
-    """
-    发送消息给所有已连接客户端
-    """
     message = message_input.get()
     if not message.strip():
         return
@@ -75,27 +80,32 @@ def send_message():
     display_message(f"Me: {message}")
     message_input.delete(0, tk.END)
 
+def send_private_message():
+    selected = user_list.curselection()
+    if not selected:
+        messagebox.showerror("错误", "请选择一位好友进行私聊！")
+        return
+    addr = list(clients.keys())[selected[0]]
+    client_socket, _ = clients[addr]
+    message = message_input.get()
+    if not message.strip():
+        return
+    client_socket.sendall(f"{username}: {message}".encode('utf-8'))
+    display_message(f"私聊({addr}): {message}")
+    message_input.delete(0, tk.END)
+
 def display_message(message):
-    """
-    在消息框中显示消息
-    """
     chat_window.config(state=tk.NORMAL)
     chat_window.insert(tk.END, f"{message}\n")
     chat_window.config(state=tk.DISABLED)
     chat_window.see(tk.END)
 
 def update_user_list():
-    """
-    更新已连接用户列表
-    """
     user_list.delete(0, tk.END)
     for addr, (_, name) in clients.items():
         user_list.insert(tk.END, f"{name} ({addr})")
 
 def add_friend():
-    """
-    通过IP和端口添加好友
-    """
     ip = simpledialog.askstring("添加好友", "请输入好友的IP地址：")
     port = simpledialog.askinteger("添加好友", "请输入好友的端口：")
     if not ip or not port:
@@ -105,32 +115,24 @@ def add_friend():
     try:
         friend_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         friend_socket.connect((ip, port))
-        friend_socket.sendall(username.encode('utf-8'))  # 发送用户名
-        clients[(ip, port)] = (friend_socket, f"好友({ip})")
-        update_user_list()
-
-        def receive_friend_messages():
-            while True:
-                try:
-                    message = friend_socket.recv(1024).decode('utf-8')
-                    display_message(f"{ip}: {message}")
-                except ConnectionResetError:
-                    break
-
-        threading.Thread(target=receive_friend_messages, daemon=True).start()
+        friend_socket.sendall(f"FRIEND_REQUEST:{username}".encode('utf-8'))
+        response = friend_socket.recv(1024).decode('utf-8')
+        if response == "ACCEPTED":
+            clients[(ip, port)] = (friend_socket, f"好友({ip})")
+            update_user_list()
+            display_message(f"成功添加好友：{ip}")
+        elif response == "DECLINED":
+            display_message(f"好友请求被拒绝：{ip}")
     except Exception as e:
         messagebox.showerror("错误", f"无法连接到好友：{e}")
 
 def discover_users():
-    """
-    实现局域网内自动连接其他用户
-    """
     def broadcast():
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as broadcast_socket:
             broadcast_socket.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             while True:
-                broadcast_socket.sendto(username.encode('utf-8'), ('<broadcast>', BROADCAST_PORT))
-                threading.Event().wait(5)  # 每5秒广播一次
+                broadcast_socket.sendto(f"DISCOVER:{username}".encode('utf-8'), ('<broadcast>', BROADCAST_PORT))
+                threading.Event().wait(5)
 
     def listen_for_broadcast():
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as listener_socket:
@@ -140,70 +142,46 @@ def discover_users():
                 if addr not in clients and addr[0] != socket.gethostbyname(socket.gethostname()):
                     threading.Thread(target=add_friend_from_broadcast, args=(addr[0],)).start()
 
-    def add_friend_from_broadcast(ip):
-        try:
-            friend_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            friend_socket.connect((ip, PORT))
-            friend_socket.sendall(username.encode('utf-8'))
-            clients[(ip, PORT)] = (friend_socket, f"好友({ip})")
-            update_user_list()
-
-            def receive_friend_messages():
-                while True:
-                    try:
-                        message = friend_socket.recv(1024).decode('utf-8')
-                        display_message(f"{ip}: {message}")
-                    except ConnectionResetError:
-                        break
-
-            threading.Thread(target=receive_friend_messages, daemon=True).start()
-        except Exception as e:
-            print(f"无法连接到用户 {ip}: {e}")
-
     threading.Thread(target=broadcast, daemon=True).start()
     threading.Thread(target=listen_for_broadcast, daemon=True).start()
 
-# GUI
+def add_friend_from_broadcast(ip):
+    try:
+        friend_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        friend_socket.connect((ip, PORT))
+        friend_socket.sendall(f"FRIEND_REQUEST:{username}".encode('utf-8'))
+        response = friend_socket.recv(1024).decode('utf-8')
+        if response == "ACCEPTED":
+            clients[(ip, PORT)] = (friend_socket, f"好友({ip})")
+            update_user_list()
+    except Exception:
+        pass
+
 # GUI
 root = tk.Tk()
-root.title("局域网聊天程序")
-root.geometry("600x400")
+root.title("局域网聊天")
 
-# 消息显示框
-chat_window = scrolledtext.ScrolledText(root, state=tk.DISABLED, wrap=tk.WORD)
-chat_window.pack(padx=10, pady=5, fill=tk.BOTH, expand=True)
+chat_window = scrolledtext.ScrolledText(root, state=tk.DISABLED)
+chat_window.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-# 消息输入框和发送按钮
-message_frame = tk.Frame(root)
-message_frame.pack(padx=10, pady=5, fill=tk.X)
+message_input = tk.Entry(root)
+message_input.pack(padx=10, pady=5, fill=tk.X)
 
-message_input = tk.Entry(message_frame)
-message_input.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
+send_button = tk.Button(root, text="群发", command=send_message)
+send_button.pack(side=tk.LEFT, padx=5, pady=5)
 
-send_button = tk.Button(message_frame, text="发送", command=send_message)
-send_button.pack(side=tk.RIGHT)
+private_button = tk.Button(root, text="私聊", command=send_private_message)
+private_button.pack(side=tk.LEFT, padx=5, pady=5)
 
-# 用户列表框
-user_list_frame = tk.Frame(root)
-user_list_frame.pack(padx=10, pady=5, fill=tk.BOTH, expand=True)
+user_list = tk.Listbox(root)
+user_list.pack(side=tk.RIGHT, padx=10, pady=10, fill=tk.Y)
 
-user_list_label = tk.Label(user_list_frame, text="已连接用户")
-user_list_label.pack(anchor=tk.W)
+root.protocol("WM_DELETE_WINDOW", root.destroy)
 
-user_list = tk.Listbox(user_list_frame)
-user_list.pack(fill=tk.BOTH, expand=True)
-
-# 功能按钮
-button_frame = tk.Frame(root)
-button_frame.pack(padx=10, pady=5, fill=tk.X)
-
-add_friend_button = tk.Button(button_frame, text="添加好友", command=add_friend)
-add_friend_button.pack(side=tk.LEFT, padx=(0, 5))
-
-# 登录和启动服务器
 login()
 start_server()
 discover_users()
-
-# 启动主循环
 root.mainloop()
+
+运行此代码即可完成功能测试，发现问馈
+
